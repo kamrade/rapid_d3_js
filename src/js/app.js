@@ -18,30 +18,47 @@ var width = 800,
 // **********************************************************
 // ==========================================================
 
+// OPTIONS
+
+
+// PROCESS UTILITES
 var position = { G:"Goalkeeper", D:"Defender", M:"Midfielder", F:"Forward" };
-var columns = [ "No", "Name", "Team", "Pos" ];
+var columns = [];
 var data = [];
+var team = [];
 
 
+// INITIALIZATIONS
 var table = d3.select('#roster')
 	.append('table')
+	// добавляет класс
 	.classed('table', true);
 
 var thead = table.append('thead').append('tr');
 var tbody = table.append('tbody');
 
+// RELOAD DATA
 var reload = function(){
 	d3.tsv('eng2-rosters.tsv', function(rows){
 		data = rows;
 		data.forEach(function(d){
 			d.Pos = position[d.Pos];
 		});
+		// d3.map от data[0] берет первый элемент из data и превращает его в объект d3
+		// где в его свойстве _ (underscore) хранятся данные и еще есть методы из d3
+		// например keys - который достает из этого объекта все названия полей
+		// таким образом мы получаем заголовки колонок
 		columns = d3.map(data[0]).keys();
+		// в итоге мы получаем массив columns с заголовками колонок
+		// и массив объектов data со всеми данными
+		// теперь можно перерисовывать
 		redraw();
 	});
 };
 
+// REDRAW TABLE IN BROWSER
 var redraw = function(){
+	// заполняем заголовки
 	thead.selectAll("th")
 		.data(columns)
 		.enter()
@@ -54,6 +71,10 @@ var redraw = function(){
 	rows.enter().append("tr");
 	rows.exit().remove();
 
+	//Тут колдунство сплошное. На самом деле немного запутано, но распутать можно
+	// Мы наполняем переменную cell tr-ками(rows), а каждую tr-ку в свою очередь забиваем td-шками
+	// Причем в каждую tr кладем столько td, сколько у нас columns-ов, тоесть колонок.
+	// Получаем полную структуру, которую потом заливаем текстом.
 	var cells = rows.selectAll("td")
 		.data(function(row){
 			var values = [];
