@@ -20,7 +20,6 @@ var width = 800,
 
 // OPTIONS
 
-
 // PROCESS UTILITES
 var position = { G:"Goalkeeper", D:"Defender", M:"Midfielder", F:"Forward" };
 // var columns = ["No", "Name", "Pos"];
@@ -34,10 +33,13 @@ var table = d3.select('#roster')
 	.append('table')
 	// добавляет класс
 	.classed('table', true);
+	// .classed('table-striped', true);
 
 var thead = table.append('thead').append('tr');
 var tbody = table.append('tbody');
 
+// добавление фильтра select и обработчика, который при изменении значения
+// фильтрует содержимое таблицы
 var teamSelector = d3.select("#page-title")
 	.append("select")
 	.on("change", function() { selectTeam( this.value ); })
@@ -70,7 +72,7 @@ var reload = function(){
 			.attr("value", function(d){ return d; })
 			.text(function(d){ return teams[d]; })
 			.sort(function(a, b){ return d3.ascending(a, b); });
-		
+
 		selectTeam("afc-wimbledon");
 	});
 };
@@ -82,15 +84,30 @@ var redraw = function(roster){
 		.data(columns)
 		.enter()
 		.append("th")
+		// Обработчик события по клику по <TH> - заголовку колонки
+		// Сортировка
+		.on("click", function(d){
+			tbody.selectAll("tr")
+				.sort(function(a, b){
+					return (d === 'No')
+					? d3.ascending(+a[d], +b[d])
+					: d3.ascending(a[d], b[d]);
+				})
+				.style('background-color', function(d, i){
+					return(i%2)? 'white':'lightgray';
+				});
+		})
 		.text(function(d){ return d; });
 
 	var rows = tbody.selectAll("tr")
 		.data(roster);
 
-	rows.enter().append("tr");
+	rows.enter().append("tr")
+		.style('background-color', function(d, i){
+			return(i%2)? 'white':'lightgray';
+		});
 	rows.exit().remove();
 
-	//Тут колдунство сплошное. На самом деле немного запутано, но распутать можно
 	// Мы наполняем переменную cell tr-ками(rows), а каждую tr-ку в свою очередь забиваем td-шками
 	// Причем в каждую tr кладем столько td, сколько у нас columns-ов, тоесть колонок.
 	// Получаем полную структуру, которую потом заливаем текстом.
@@ -104,12 +121,9 @@ var redraw = function(roster){
 		});
 	cells.enter().append("td");
 	cells.text(function(d){ return d; });
-
-
-
 };
 
-
+// Функция фильтра выбора команды
 var selectTeam = function(teamId) {
 	var roster = data.filter(function(d) {
 		return d["TeamID"] == teamId;
