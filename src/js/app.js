@@ -21,8 +21,7 @@ var width = 750,
 var svg = d3.select("#results")
 	.append("svg")
 	.attr("width", width)
-	.attr("height", height)
-;
+	.attr("height", height);
 
 // **********************************************   SCALING   ****************************
 var x = d3.scale
@@ -57,6 +56,11 @@ var redraw = function(data) {
 	bars
 		.attr("x", function(d, i) { return x(i); })
 		.attr("width", x.rangeBand())
+		.attr("y", y(0))
+		.attr("height", 0)
+		.transition()
+		.delay(function(d,i){ return i*10; })
+		.duration(400)
 		.attr("y", function(d){ return y(d.GoalsScored); })
 		.attr("height", function(d) { return y(0) - y(d.GoalsScored); });
 
@@ -75,9 +79,9 @@ var redraw = function(data) {
 			.classed(d.clazz, true)
 			.call(d.axis);
 	});
-
-
 };
+
+// **********************************************   FIN   ****************************
 
 reload();
 
